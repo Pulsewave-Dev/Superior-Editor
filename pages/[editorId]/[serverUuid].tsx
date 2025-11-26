@@ -1,7 +1,6 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 
 interface Rank {
   id: string;
@@ -500,3 +499,4 @@ const styles: { [key: string]: React.CSSProperties } = {
     opacity: 0.7,
   },
 };
+
