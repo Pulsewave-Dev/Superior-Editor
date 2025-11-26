@@ -361,9 +361,6 @@ export default function EditorPage() {
                 {saving ? 'Saving...' : 'Synced'}
               </span>
             </div>
-            <button onClick={downloadChanges} style={styles.downloadButton}>
-              💾 Download Changes
-            </button>
           </div>
         </header>
 
