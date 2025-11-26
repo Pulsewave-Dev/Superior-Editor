@@ -2,7 +2,7 @@
 
 ## 🚀 Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Pulsewave-Dev/Superior)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR-USERNAME/Superior)
 
 ## ✨ No Database Required!
 
@@ -95,4 +95,3 @@ The plugin creates these JSON files in `plugins/Superior/editor-sessions/`:
 9. Changes applied in-game immediately
 
 **No database, no API, just files!**
-

@@ -23,7 +23,7 @@ interface Tag {
 
 export default function EditorPage() {
   const router = useRouter();
-  const { editorId, serverUuid } = router.query;
+  const { editorId, serverUuid, api } = router.query;
   
   const [ranks, setRanks] = useState<Rank[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -35,22 +35,34 @@ export default function EditorPage() {
   const [editingRank, setEditingRank] = useState<Rank | null>(null);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [apiUrl, setApiUrl] = useState<string>('');
 
   useEffect(() => {
-    if (editorId && serverUuid) {
+    if (api && typeof api === 'string') {
+      setApiUrl(api);
+    }
+  }, [api]);
+
+  useEffect(() => {
+    if (editorId && serverUuid && apiUrl) {
       loadData();
-      const interval = setInterval(loadData, 5000); // Refresh every 5 seconds
+      const interval = setInterval(loadData, 3000); // Refresh every 3 seconds
       return () => clearInterval(interval);
     }
-  }, [editorId, serverUuid]);
+  }, [editorId, serverUuid, apiUrl]);
 
   const loadData = async () => {
+    if (!apiUrl) return;
+    
     try {
       setLoading(true);
-      const response = await fetch(`/api/editor/${editorId}`);
+      const response = await fetch(`${apiUrl}/api/editor/${editorId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
       
       if (!response.ok) {
-        throw new Error('Session not found or expired');
+        throw new Error('Failed to connect to server');
       }
       
       const data = await response.json();
@@ -97,7 +109,7 @@ export default function EditorPage() {
       }
       
       // Send changes to API
-      const response = await fetch(`/api/editor/${editorId}`, {
+      const response = await fetch(`${apiUrl}/api/editor/${editorId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +150,7 @@ export default function EditorPage() {
       setRanks(ranks.filter(r => r.id !== id));
       
       // Send delete to API
-      await fetch(`/api/editor/${editorId}`, {
+      await fetch(`${apiUrl}/api/editor/${editorId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -184,7 +196,7 @@ export default function EditorPage() {
         setTags([...tags, editingTag]);
       }
       
-      await fetch(`/api/editor/${editorId}`, {
+      await fetch(`${apiUrl}/api/editor/${editorId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -215,7 +227,7 @@ export default function EditorPage() {
       setSaving(true);
       setTags(tags.filter(t => t.id !== id));
       
-      await fetch(`/api/editor/${editorId}`, {
+      await fetch(`${apiUrl}/api/editor/${editorId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -266,6 +278,16 @@ export default function EditorPage() {
     t.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (!apiUrl) {
+    return (
+      <div style={styles.loading}>
+        <div style={styles.loadingSpinner}></div>
+        <h1 style={{marginTop: '20px'}}>Initializing Editor...</h1>
+        <p style={{opacity: 0.7}}>Connecting to Minecraft server...</p>
+      </div>
+    );
+  }
 
   if (loading && ranks.length === 0) {
     return (
@@ -339,6 +361,9 @@ export default function EditorPage() {
                 {saving ? 'Saving...' : 'Synced'}
               </span>
             </div>
+            <button onClick={downloadChanges} style={styles.downloadButton}>
+              💾 Download Changes
+            </button>
           </div>
         </header>
 
@@ -1090,5 +1115,32 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginTop: '20px',
     boxShadow: '0 4px 16px rgba(255,255,255,0.2)',
     transition: 'all 0.3s',
+  },
+  uploadLabel: {
+    cursor: 'pointer',
+  },
+  uploadButton: {
+    padding: '18px 36px',
+    borderRadius: '16px',
+    border: 'none',
+    background: 'linear-gradient(135deg, #2ed573 0%, #26de81 100%)',
+    color: 'white',
+    fontSize: '18px',
+    fontWeight: 700,
+    boxShadow: '0 8px 24px rgba(46, 213, 115, 0.3)',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'pointer',
+  },
+  downloadButton: {
+    padding: '10px 20px',
+    borderRadius: '10px',
+    border: 'none',
+    background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+    color: 'white',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 600,
+    transition: 'all 0.3s',
+    boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)',
   },
 };
